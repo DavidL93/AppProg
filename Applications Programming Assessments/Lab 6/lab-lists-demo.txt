@@ -1,0 +1,159 @@
+import java.util.*;
+
+/**
+ * A customer has a savings account and a loan account.
+ *
+ * You can deposit into and withdraw from the savings account,
+ * and you can transfer money from the savings to the loan account.
+ * You can also view the balance of all accounts.
+ */
+public class Customer {
+    public static void main(String[] args) {
+        new Customer().use();
+    }
+    private LinkedList<Account> accounts = new LinkedList<Account>();
+
+    public Customer() {
+        accounts.add(new Account("Savings"));
+        accounts.add(new Account("Loan"));
+    }
+
+    public void use() {
+        char choice;
+        while ((choice = readChoice()) != 'x') {
+            switch (choice) {
+            case 'd': deposit(); break;
+            case 'w': withdraw(); break;
+            case 't': transfer(); break;
+            case 'v': view(); break;
+            default: help(); break;
+            }
+        }
+    }
+
+    private char readChoice() {
+        System.out.print("Customer menu (d/w/t/s/x): ");
+        return In.nextChar();
+    }
+
+    private void deposit() {
+        Account account = account(readType());
+        if (account != null)
+            account.deposit(readAmount("deposit"));
+        else
+            System.out.println("No such account");
+    }
+
+    private void withdraw() {
+        double amount = readAmount("withdraw");
+        Account savingsAccount = account("Savings");
+        if (savingsAccount.has(amount))
+            savingsAccount.withdraw(amount);
+        else
+            System.out.println("Insufficient funds");
+    }
+
+    private void transfer() {
+        double amount = readAmount("transfer");
+        Account savingsAccount = account("Savings");
+        if (savingsAccount.has(amount))
+            savingsAccount.transferTo(amount, account("Loan"));
+        else
+            System.out.println("Insufficient funds");
+    }
+
+    private double readAmount(String action) {
+        System.out.print("Amount to " + action + ": $");
+        return In.nextDouble();
+    }
+
+    private void view() {
+        // View all accounts:
+        //
+        // for (Account account : accounts)
+        //     System.out.println(account);
+        //
+        // View selected account:
+        Account account = account(readType());
+        if (account != null)
+            System.out.println(account);
+        else
+            System.out.println("No such account");
+    }
+
+    private String readType() {
+        System.out.print("Account type: ");
+        return In.nextLine();
+    }
+
+    private void help() {
+        System.out.println("Menu options");
+        System.out.println("d = deposit");
+        System.out.println("w = withdraw");
+        System.out.println("t = transfer");
+        System.out.println("v = view");
+        System.out.println("x = exit");
+    }
+
+    private Account account(String type) {
+        for (Account account : accounts)
+            if (account.hasType(type))
+                return account;
+        return null;
+    }
+}
+
+import java.text.*;
+
+/**
+ * Each account has a type (Savings/Loan) and a balance.
+ * The initial balance is read in from the user.
+ *
+ * You can deposit into and withdraw from an account, and
+ * transfer money to another account.
+ * In all of these, the amount is read in.
+ */
+public class Account {
+    private String type;
+    private double balance;
+
+    public Account(String type) {
+        this.type = type;
+        balance = readBalance();
+    }
+
+    private double readBalance() {
+        System.out.print("Initial " + type + " balance: $");
+        return In.nextDouble();
+    }
+
+    public boolean has(double amount) {
+        return balance >= amount;
+    }
+
+    public boolean hasType(String type) {
+        return type.equals(this.type);
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+    }
+
+    public void withdraw(double amount) {
+        balance -= amount;
+    }
+
+    public void transferTo(double amount, Account target) {
+        balance -= amount;
+        target.balance += amount;
+    }
+
+    @Override
+    public String toString() {
+        return type + " account has $" + formatted(balance);
+    }
+
+    private String formatted(double amount) {
+        return new DecimalFormat("###,##0.00").format(amount);
+    }
+}
